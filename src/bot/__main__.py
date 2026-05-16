@@ -12,6 +12,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from bot import db
 from bot.config import load_config
 from bot.handlers import register_all
+from bot.middlewares.ban_check import BanCheckMiddleware
 from bot.middlewares.deps import DepsMiddleware
 from bot.repositories import SubscriptionsRepo, TournamentsRepo, UsersRepo
 
@@ -49,6 +50,10 @@ async def main() -> None:
     )
     dp.message.middleware(deps)
     dp.callback_query.middleware(deps)
+
+    ban_check = BanCheckMiddleware()
+    dp.message.middleware(ban_check)
+    dp.callback_query.middleware(ban_check)
 
     register_all(dp)
 

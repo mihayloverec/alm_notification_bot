@@ -34,6 +34,47 @@ ADMIN_MENU = "🛠 Админ-меню:"
 BTN_ADMIN_ADD = "➕ Добавить турнир"
 BTN_ADMIN_MANAGE = "📝 Управление турнирами"
 BTN_ADMIN_BROADCAST = "📢 Рассылка"
+BTN_ADMIN_PLAYERS = "👥 Игроки"
+
+# Игроки (админ)
+PLAYERS_LIST_HEADER = "Игроки: всего <b>{total}</b>, страница <b>{page}/{pages}</b>"
+PLAYERS_LIST_EMPTY = "Пока никто не запускал бота."
+BTN_PREV_PAGE = "◀️"
+BTN_NEXT_PAGE = "▶️"
+BTN_SEARCH = "🔍 Поиск"
+SEARCH_ENTER_QUERY = (
+    "Введите запрос для поиска по @username, имени или Telegram ID:"
+)
+SEARCH_RESULTS_HEADER = "Найдено: <b>{n}</b>"
+SEARCH_NO_RESULTS = "По запросу «{q}» ничего не найдено."
+
+PLAYER_CARD = (
+    "👤 <b>{display_name}</b>\n"
+    "ID: <code>{user_id}</code>\n"
+    "{username_line}"
+    "Регистрация: {created_at}\n"
+    "Статус: {status}\n"
+    "Подписок: <b>{subs}</b>"
+)
+PLAYER_STATUS_OK = "🟢 активен"
+PLAYER_STATUS_BLOCKED = "⚪ заблокировал бота"
+PLAYER_STATUS_BANNED = "🚫 забанен"
+BTN_BAN = "🚫 Забанить"
+BTN_UNBAN = "♻️ Разбанить"
+BTN_PLAYER_ADD_SUB = "➕ Подписать на турнир"
+BTN_PLAYER_SUBS = "📋 Подписки игрока"
+PLAYER_BANNED = "Игрок забанен."
+PLAYER_UNBANNED = "Игрок разбанен."
+PLAYER_SELF_BAN_FORBIDDEN = "Нельзя забанить самого себя."
+PLAYER_CHOOSE_TOURNAMENT = "Выберите турнир для подписки:"
+PLAYER_SUBSCRIBED = "Игрок подписан на «{name}»."
+PLAYER_NO_SUBS = "У игрока нет подписок."
+PLAYER_SUBS_LIST = "Подписки игрока:"
+PLAYER_UNSUBSCRIBED = "Подписка на «{name}» снята."
+NO_ACTIVE_TOURNAMENTS_ADMIN = "Сейчас нет активных турниров. Сначала создай или открой турнир."
+
+# Бан игрока — что видит сам игрок
+BANNED_NOTICE = "Вы заблокированы администратором."
 
 # Добавление турнира
 ADD_ENTER_NAME = "Введите название турнира:"

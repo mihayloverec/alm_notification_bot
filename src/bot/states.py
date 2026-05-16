@@ -19,3 +19,7 @@ class Broadcast(StatesGroup):
     waiting_for_audience = State()
     waiting_for_message = State()
     waiting_for_confirm = State()
+
+
+class SearchPlayers(StatesGroup):
+    waiting_for_query = State()

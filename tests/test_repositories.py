@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 
 async def test_create_and_get_tournament(tournaments_repo):
     tid = await tournaments_repo.create("Cup 1", "First cup")
@@ -101,3 +99,66 @@ async def test_subscribed_active_ids(
 
     await users_repo.mark_blocked(1)
     assert await users_repo.subscribed_active_ids(t1) == [2]
+
+
+async def test_banned_excluded_from_active_lists(
+    users_repo, tournaments_repo, subscriptions_repo
+):
+    for uid in (1, 2, 3):
+        await users_repo.upsert(uid, None, None)
+    t = await tournaments_repo.create("T", "")
+    for uid in (1, 2, 3):
+        await subscriptions_repo.subscribe(uid, t)
+
+    await users_repo.set_banned(2, True)
+
+    assert await users_repo.all_active_ids() == [1, 3]
+    assert await users_repo.subscribed_active_ids(t) == [1, 3]
+
+    await users_repo.set_banned(2, False)
+    assert await users_repo.all_active_ids() == [1, 2, 3]
+
+
+async def test_banned_keeps_subscriptions(
+    users_repo, tournaments_repo, subscriptions_repo
+):
+    await users_repo.upsert(1, None, None)
+    t = await tournaments_repo.create("T", "")
+    await subscriptions_repo.subscribe(1, t)
+    await users_repo.set_banned(1, True)
+    # subscription survives the ban
+    assert await subscriptions_repo.is_subscribed(1, t) is True
+    assert await subscriptions_repo.count_for_user(1) == 1
+
+
+async def test_count_and_pagination(users_repo):
+    for uid in range(1, 26):
+        await users_repo.upsert(uid, f"user{uid}", f"User {uid}")
+    assert await users_repo.count() == 25
+    page0 = await users_repo.list_page(offset=0, limit=10)
+    page1 = await users_repo.list_page(offset=10, limit=10)
+    page2 = await users_repo.list_page(offset=20, limit=10)
+    assert len(page0) == 10
+    assert len(page1) == 10
+    assert len(page2) == 5
+    # пагинация не пересекается
+    ids = {u.user_id for u in page0} | {u.user_id for u in page1} | {u.user_id for u in page2}
+    assert ids == set(range(1, 26))
+
+
+async def test_search_by_username_and_id(users_repo):
+    await users_repo.upsert(100, "alice", "Alice")
+    await users_repo.upsert(200, "bob", "Bob")
+    await users_repo.upsert(300, None, "Charlie")
+
+    by_username = await users_repo.search("ali")
+    assert {u.user_id for u in by_username} == {100}
+
+    by_first_name = await users_repo.search("char")
+    assert {u.user_id for u in by_first_name} == {300}
+
+    by_id = await users_repo.search("200")
+    assert {u.user_id for u in by_id} == {200}
+
+    nothing = await users_repo.search("xyz_no_match")
+    assert nothing == []

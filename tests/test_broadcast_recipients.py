@@ -35,3 +35,19 @@ async def test_recipients_per_tournament(
     assert r1 == [2]            # 1 заблокирован, 2 подписан
     assert r2 == [3]
     assert r_all == [2, 3, 4]   # 1 заблокирован, остальные активны
+
+
+async def test_banned_excluded_from_broadcast(
+    users_repo, tournaments_repo, subscriptions_repo
+):
+    for uid in (1, 2, 3):
+        await users_repo.upsert(uid, None, None)
+    t = await tournaments_repo.create("T", "")
+    for uid in (1, 2, 3):
+        await subscriptions_repo.subscribe(uid, t)
+    await users_repo.set_banned(2, True)
+
+    r_all = await broadcast_service.get_recipients(users_repo, tournament_id=None)
+    r_t = await broadcast_service.get_recipients(users_repo, tournament_id=t)
+    assert r_all == [1, 3]
+    assert r_t == [1, 3]

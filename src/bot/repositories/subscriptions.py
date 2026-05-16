@@ -35,3 +35,11 @@ class SubscriptionsRepo:
         ) as cur:
             rows = await cur.fetchall()
         return [r["tournament_id"] for r in rows]
+
+    async def count_for_user(self, user_id: int) -> int:
+        async with self._conn.execute(
+            "SELECT COUNT(*) AS n FROM subscriptions WHERE user_id = ?",
+            (user_id,),
+        ) as cur:
+            row = await cur.fetchone()
+        return int(row["n"]) if row else 0
