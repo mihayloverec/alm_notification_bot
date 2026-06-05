@@ -32,6 +32,10 @@ class Inquiry(StatesGroup):
     waiting_for_confirm = State()
 
 
+class InquiryReply(StatesGroup):
+    waiting_for_message = State()
+
+
 class AddOrganizer(StatesGroup):
     waiting_for_query = State()
 

@@ -59,3 +59,13 @@ class MenuBtnCB(CallbackData, prefix="mb"):
 
 class BroadcastBtnCB(CallbackData, prefix="bcb"):
     action: str  # "add" | "reset"
+
+
+class InquiryReplyCB(CallbackData, prefix="irep"):
+    sender_id: int
+    type: str = ""
+
+
+class InquiryBanCB(CallbackData, prefix="iban"):
+    action: str  # "init" | "yes" | "no"
+    sender_id: int

@@ -41,6 +41,14 @@ class InquiryRecipientsRepo:
         ) as cur:
             return await cur.fetchone() is not None
 
+    async def is_recipient_anywhere(self, user_id: int) -> bool:
+        """True if the user is a recipient for at least one inquiry type."""
+        async with self._conn.execute(
+            "SELECT 1 FROM inquiry_recipients WHERE user_id = ? LIMIT 1",
+            (user_id,),
+        ) as cur:
+            return await cur.fetchone() is not None
+
     async def list_users(self, inquiry_type: str) -> list[User]:
         async with self._conn.execute(
             """
