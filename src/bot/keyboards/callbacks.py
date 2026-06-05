@@ -50,3 +50,12 @@ class OrganizerCB(CallbackData, prefix="og"):
     action: str  # "list" | "add" | "page" | "pick" | "search" | "del" | "del_yes"
     user_id: int = 0
     page: int = 0
+
+
+class MenuBtnCB(CallbackData, prefix="mb"):
+    action: str  # "list" | "view" | "add" | "edit_text" | "edit_url" | "up" | "down" | "del" | "del_yes"
+    button_id: int = 0
+
+
+class BroadcastBtnCB(CallbackData, prefix="bcb"):
+    action: str  # "add" | "reset"

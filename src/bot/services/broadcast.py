@@ -10,6 +10,7 @@ from aiogram.exceptions import (
     TelegramForbiddenError,
     TelegramRetryAfter,
 )
+from aiogram.types import InlineKeyboardMarkup
 
 from bot.repositories import UsersRepo
 
@@ -42,6 +43,7 @@ async def broadcast(
     source_chat_id: int,
     source_message_id: int,
     *,
+    reply_markup: InlineKeyboardMarkup | None = None,
     rate_per_sec: int = DEFAULT_RATE_PER_SEC,
 ) -> BroadcastResult:
     """Copy a source message to each recipient with rate-limiting and error handling."""
@@ -49,7 +51,10 @@ async def broadcast(
     delay = 1.0 / max(rate_per_sec, 1)
 
     for user_id in recipients:
-        await _send_one(bot, users_repo, user_id, source_chat_id, source_message_id, result)
+        await _send_one(
+            bot, users_repo, user_id, source_chat_id, source_message_id,
+            reply_markup, result,
+        )
         await asyncio.sleep(delay)
 
     log.info(
@@ -67,6 +72,7 @@ async def _send_one(
     user_id: int,
     source_chat_id: int,
     source_message_id: int,
+    reply_markup: InlineKeyboardMarkup | None,
     result: BroadcastResult,
 ) -> None:
     try:
@@ -74,6 +80,7 @@ async def _send_one(
             chat_id=user_id,
             from_chat_id=source_chat_id,
             message_id=source_message_id,
+            reply_markup=reply_markup,
         )
         result.sent += 1
     except TelegramRetryAfter as e:
@@ -84,6 +91,7 @@ async def _send_one(
                 chat_id=user_id,
                 from_chat_id=source_chat_id,
                 message_id=source_message_id,
+                reply_markup=reply_markup,
             )
             result.sent += 1
         except Exception:

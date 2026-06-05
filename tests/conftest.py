@@ -5,6 +5,7 @@ import pytest_asyncio
 from bot import db
 from bot.repositories import (
     InquiryRecipientsRepo,
+    MenuButtonsRepo,
     OrganizersRepo,
     SubscriptionsRepo,
     TournamentsRepo,
@@ -44,3 +45,8 @@ async def inquiry_recipients_repo(conn):
 @pytest_asyncio.fixture
 async def organizers_repo(conn):
     return OrganizersRepo(conn)
+
+
+@pytest_asyncio.fixture
+async def menu_buttons_repo(conn):
+    return MenuButtonsRepo(conn)

@@ -4,6 +4,7 @@ from .inquiry_recipients import (
     INQUIRY_TYPES,
     InquiryRecipientsRepo,
 )
+from .menu_buttons import MenuButton, MenuButtonsRepo
 from .organizers import OrganizersRepo
 from .subscriptions import SubscriptionsRepo
 from .tournaments import Tournament, TournamentsRepo
@@ -14,6 +15,8 @@ __all__ = [
     "INQUIRY_SK",
     "INQUIRY_TYPES",
     "InquiryRecipientsRepo",
+    "MenuButton",
+    "MenuButtonsRepo",
     "OrganizersRepo",
     "SubscriptionsRepo",
     "Tournament",

@@ -3,20 +3,27 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot import texts
 from bot.keyboards.callbacks import InquiryUserCB, MenuCB, TournamentCB
-from bot.repositories import Tournament
+from bot.repositories import MenuButton, Tournament
 
 
-def main_menu(elevated: bool = False) -> InlineKeyboardMarkup:
+def main_menu(
+    elevated: bool = False,
+    custom_buttons: list[MenuButton] | None = None,
+) -> InlineKeyboardMarkup:
+    custom_buttons = custom_buttons or []
     kb = InlineKeyboardBuilder()
     kb.button(text=texts.BTN_TOURNAMENTS, callback_data=MenuCB(action="tournaments"))
     kb.button(text=texts.BTN_MY_SUBS, callback_data=MenuCB(action="my_subs"))
     kb.button(text=texts.BTN_INQUIRY_SK, callback_data=InquiryUserCB(action="start", type="sk"))
     kb.button(text=texts.BTN_INQUIRY_DK, callback_data=InquiryUserCB(action="start", type="dk"))
+    # Кастомные URL-кнопки, каждая отдельным рядом
+    for b in custom_buttons:
+        kb.button(text=b.text, url=b.url)
     if elevated:
         kb.button(text="🛠 Меню админа/организатора", callback_data=MenuCB(action="admin"))
-    # 2 турнирные кнопки в одном ряду, каждая кнопка обращения — отдельным рядом
-    # (длинные подписи иначе обрезаются на мобильном)
-    kb.adjust(2, 1, 1, 1)
+    # 2 турнирные кнопки в одном ряду, дальше каждая в свой ряд
+    rows = [2] + [1, 1] + [1] * len(custom_buttons) + ([1] if elevated else [])
+    kb.adjust(*rows)
     return kb.as_markup()
 
 

@@ -7,7 +7,7 @@ from bot import texts
 from bot.config import Config
 from bot.keyboards import user as user_kb
 from bot.keyboards.callbacks import MenuCB
-from bot.repositories import OrganizersRepo, UsersRepo
+from bot.repositories import MenuButtonsRepo, OrganizersRepo, UsersRepo
 
 router = Router(name="common")
 
@@ -24,6 +24,7 @@ async def cmd_start(
     state: FSMContext,
     users_repo: UsersRepo,
     organizers_repo: OrganizersRepo,
+    menu_buttons_repo: MenuButtonsRepo,
     config: Config,
 ) -> None:
     await state.clear()
@@ -36,9 +37,10 @@ async def cmd_start(
         first_name=user.first_name,
     )
     elevated = await _is_elevated(user.id, config, organizers_repo)
+    custom_buttons = await menu_buttons_repo.list_all()
     await message.answer(
         texts.START_GREETING,
-        reply_markup=user_kb.main_menu(elevated=elevated),
+        reply_markup=user_kb.main_menu(elevated=elevated, custom_buttons=custom_buttons),
     )
 
 
@@ -48,6 +50,7 @@ async def cmd_menu(
     state: FSMContext,
     users_repo: UsersRepo,
     organizers_repo: OrganizersRepo,
+    menu_buttons_repo: MenuButtonsRepo,
     config: Config,
 ) -> None:
     await state.clear()
@@ -60,9 +63,10 @@ async def cmd_menu(
         first_name=user.first_name,
     )
     elevated = await _is_elevated(user.id, config, organizers_repo)
+    custom_buttons = await menu_buttons_repo.list_all()
     await message.answer(
         texts.MAIN_MENU,
-        reply_markup=user_kb.main_menu(elevated=elevated),
+        reply_markup=user_kb.main_menu(elevated=elevated, custom_buttons=custom_buttons),
     )
 
 
@@ -72,12 +76,14 @@ async def cb_main_menu(
     state: FSMContext,
     config: Config,
     organizers_repo: OrganizersRepo,
+    menu_buttons_repo: MenuButtonsRepo,
 ) -> None:
     await state.clear()
     user = callback.from_user
     elevated = await _is_elevated(user.id, config, organizers_repo)
+    custom_buttons = await menu_buttons_repo.list_all()
     await callback.message.edit_text(
         texts.MAIN_MENU,
-        reply_markup=user_kb.main_menu(elevated=elevated),
+        reply_markup=user_kb.main_menu(elevated=elevated, custom_buttons=custom_buttons),
     )
     await callback.answer()

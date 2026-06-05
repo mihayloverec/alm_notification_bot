@@ -5,15 +5,17 @@ from bot import texts
 from bot.keyboards.callbacks import (
     AddTournamentCB,
     AdminCB,
+    BroadcastBtnCB,
     BroadcastCB,
     InquiryAdminCB,
+    MenuBtnCB,
     MenuCB,
     OrganizerCB,
     PlayerCB,
     PlayersCB,
     TournamentCB,
 )
-from bot.repositories import Tournament, User
+from bot.repositories import MenuButton, Tournament, User
 
 
 def admin_menu() -> InlineKeyboardMarkup:
@@ -24,6 +26,7 @@ def admin_menu() -> InlineKeyboardMarkup:
     kb.button(text=texts.BTN_ADMIN_PLAYERS, callback_data=AdminCB(action="players"))
     kb.button(text=texts.BTN_ADMIN_INQUIRY, callback_data=AdminCB(action="inquiry"))
     kb.button(text=texts.BTN_ADMIN_ORGANIZERS, callback_data=AdminCB(action="organizers"))
+    kb.button(text=texts.BTN_ADMIN_MENU_BUTTONS, callback_data=AdminCB(action="menu_buttons"))
     kb.button(text=texts.BACK, callback_data=MenuCB(action="main"))
     kb.adjust(1)
     return kb.as_markup()
@@ -91,11 +94,21 @@ def broadcast_audience(tournaments: list[Tournament]) -> InlineKeyboardMarkup:
     return kb.as_markup()
 
 
-def broadcast_confirm() -> InlineKeyboardMarkup:
+def broadcast_confirm(buttons_count: int = 0) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
+    kb.button(text=texts.BTN_BROADCAST_ADD_BUTTON, callback_data=BroadcastBtnCB(action="add"))
+    if buttons_count > 0:
+        kb.button(
+            text=texts.BTN_BROADCAST_RESET_BUTTONS,
+            callback_data=BroadcastBtnCB(action="reset"),
+        )
     kb.button(text=texts.BTN_SEND, callback_data=BroadcastCB(action="send"))
     kb.button(text=texts.CANCEL, callback_data=BroadcastCB(action="cancel"))
-    kb.adjust(2)
+    # add (row1), reset (row2 if any), send+cancel (row3)
+    if buttons_count > 0:
+        kb.adjust(1, 1, 2)
+    else:
+        kb.adjust(1, 2)
     return kb.as_markup()
 
 
@@ -397,6 +410,75 @@ def organizer_remove_confirm(user_id: int) -> InlineKeyboardMarkup:
     kb.button(
         text=texts.BTN_NO,
         callback_data=OrganizerCB(action="list"),
+    )
+    kb.adjust(2)
+    return kb.as_markup()
+
+
+# ---------- Кастомные кнопки меню ----------
+
+def menu_buttons_list(buttons: list[MenuButton]) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    for b in buttons:
+        kb.button(
+            text=b.text,
+            callback_data=MenuBtnCB(action="view", button_id=b.id),
+        )
+    kb.button(
+        text=texts.BTN_MENU_BUTTON_ADD,
+        callback_data=MenuBtnCB(action="add"),
+    )
+    kb.button(text=texts.BACK, callback_data=MenuCB(action="admin"))
+    kb.adjust(1)
+    return kb.as_markup()
+
+
+def menu_button_card(b: MenuButton, *, is_first: bool, is_last: bool) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    kb.button(
+        text=texts.BTN_MENU_BUTTON_EDIT_TEXT,
+        callback_data=MenuBtnCB(action="edit_text", button_id=b.id),
+    )
+    kb.button(
+        text=texts.BTN_MENU_BUTTON_EDIT_URL,
+        callback_data=MenuBtnCB(action="edit_url", button_id=b.id),
+    )
+    if not is_first:
+        kb.button(
+            text=texts.BTN_MENU_BUTTON_UP,
+            callback_data=MenuBtnCB(action="up", button_id=b.id),
+        )
+    if not is_last:
+        kb.button(
+            text=texts.BTN_MENU_BUTTON_DOWN,
+            callback_data=MenuBtnCB(action="down", button_id=b.id),
+        )
+    kb.button(
+        text=texts.BTN_MENU_BUTTON_DELETE,
+        callback_data=MenuBtnCB(action="del", button_id=b.id),
+    )
+    kb.button(text=texts.BACK, callback_data=MenuBtnCB(action="list"))
+
+    # edit text/url one row; up/down one row (2 buttons if both available, 1 otherwise);
+    # delete; back
+    second_row = sum(1 for x in (not is_first, not is_last) if x)
+    rows = [2]
+    if second_row > 0:
+        rows.append(second_row)
+    rows.extend([1, 1])
+    kb.adjust(*rows)
+    return kb.as_markup()
+
+
+def menu_button_delete_confirm(button_id: int) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    kb.button(
+        text=texts.BTN_YES,
+        callback_data=MenuBtnCB(action="del_yes", button_id=button_id),
+    )
+    kb.button(
+        text=texts.BTN_NO,
+        callback_data=MenuBtnCB(action="view", button_id=button_id),
     )
     kb.adjust(2)
     return kb.as_markup()

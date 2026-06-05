@@ -9,6 +9,7 @@ from aiogram.types import TelegramObject
 from bot.config import Config
 from bot.repositories import (
     InquiryRecipientsRepo,
+    MenuButtonsRepo,
     OrganizersRepo,
     SubscriptionsRepo,
     TournamentsRepo,
@@ -27,6 +28,7 @@ class DepsMiddleware(BaseMiddleware):
         subscriptions_repo: SubscriptionsRepo,
         inquiry_recipients_repo: InquiryRecipientsRepo,
         organizers_repo: OrganizersRepo,
+        menu_buttons_repo: MenuButtonsRepo,
     ) -> None:
         self._config = config
         self._users_repo = users_repo
@@ -34,6 +36,7 @@ class DepsMiddleware(BaseMiddleware):
         self._subscriptions_repo = subscriptions_repo
         self._inquiry_recipients_repo = inquiry_recipients_repo
         self._organizers_repo = organizers_repo
+        self._menu_buttons_repo = menu_buttons_repo
 
     async def __call__(
         self,
@@ -47,4 +50,5 @@ class DepsMiddleware(BaseMiddleware):
         data["subscriptions_repo"] = self._subscriptions_repo
         data["inquiry_recipients_repo"] = self._inquiry_recipients_repo
         data["organizers_repo"] = self._organizers_repo
+        data["menu_buttons_repo"] = self._menu_buttons_repo
         return await handler(event, data)

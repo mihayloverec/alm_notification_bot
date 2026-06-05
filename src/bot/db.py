@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import aiosqlite
 
-CURRENT_SCHEMA_VERSION = 3
+CURRENT_SCHEMA_VERSION = 4
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
@@ -53,6 +53,17 @@ CREATE TABLE IF NOT EXISTS organizers (
     added_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS menu_buttons (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    text       TEXT NOT NULL,
+    url        TEXT NOT NULL,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_menu_buttons_sort_order
+    ON menu_buttons(sort_order);
 """
 
 
@@ -86,6 +97,10 @@ async def _migrate(conn: aiosqlite.Connection) -> None:
     if version < 3:
         # v3: organizers table — CREATE TABLE IF NOT EXISTS in SCHEMA handles it.
         await conn.execute("PRAGMA user_version = 3")
+
+    if version < 4:
+        # v4: menu_buttons table — CREATE TABLE IF NOT EXISTS in SCHEMA handles it.
+        await conn.execute("PRAGMA user_version = 4")
 
 
 async def _add_column_if_missing(

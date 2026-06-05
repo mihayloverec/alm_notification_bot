@@ -5,11 +5,16 @@ import logging
 
 from aiogram import Bot, F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
 
 from bot import texts
 from bot.keyboards import admin as admin_kb
-from bot.keyboards.callbacks import AdminCB, BroadcastCB
+from bot.keyboards.callbacks import AdminCB, BroadcastBtnCB, BroadcastCB
 from bot.middlewares.elevated import ElevatedAccessMiddleware
 from bot.repositories import TournamentsRepo, UsersRepo
 from bot.services import broadcast as broadcast_service
@@ -90,11 +95,68 @@ async def receive_broadcast_message(
         source_chat_id=message.chat.id,
         source_message_id=message.message_id,
         recipients=recipients,
+        buttons=[],
     )
     await state.set_state(Broadcast.waiting_for_confirm)
     await message.answer(
-        texts.BROADCAST_PREVIEW.format(count=len(recipients)),
-        reply_markup=admin_kb.broadcast_confirm(),
+        texts.BROADCAST_PREVIEW_WITH_BUTTONS.format(count=len(recipients), buttons=0),
+        reply_markup=admin_kb.broadcast_confirm(buttons_count=0),
+    )
+
+
+# ---------- управление кнопками в превью ----------
+
+@router.callback_query(
+    Broadcast.waiting_for_confirm, BroadcastBtnCB.filter(F.action == "add")
+)
+async def cb_broadcast_button_add(callback: CallbackQuery, state: FSMContext) -> None:
+    await state.set_state(Broadcast.waiting_for_button_text)
+    await callback.message.edit_text(texts.BROADCAST_BUTTON_ENTER_TEXT)
+    await callback.answer()
+
+
+@router.message(Broadcast.waiting_for_button_text)
+async def msg_broadcast_button_text(message: Message, state: FSMContext) -> None:
+    text = (message.text or "").strip()
+    if not text:
+        await message.answer(texts.MENU_BUTTON_TEXT_EMPTY)
+        return
+    await state.update_data(_pending_btn_text=text)
+    await state.set_state(Broadcast.waiting_for_button_url)
+    await message.answer(texts.BROADCAST_BUTTON_ENTER_URL)
+
+
+@router.message(Broadcast.waiting_for_button_url)
+async def msg_broadcast_button_url(message: Message, state: FSMContext) -> None:
+    url = (message.text or "").strip()
+    if not (url.startswith("http://") or url.startswith("https://")):
+        await message.answer(texts.MENU_BUTTON_INVALID_URL)
+        return
+    data = await state.get_data()
+    buttons: list[list[str]] = list(data.get("buttons", []))
+    buttons.append([data["_pending_btn_text"], url])
+    await state.update_data(buttons=buttons, _pending_btn_text=None)
+    await state.set_state(Broadcast.waiting_for_confirm)
+    await message.answer(
+        texts.BROADCAST_PREVIEW_WITH_BUTTONS.format(
+            count=len(data["recipients"]), buttons=len(buttons)
+        ),
+        reply_markup=admin_kb.broadcast_confirm(buttons_count=len(buttons)),
+    )
+
+
+@router.callback_query(
+    Broadcast.waiting_for_confirm, BroadcastBtnCB.filter(F.action == "reset")
+)
+async def cb_broadcast_buttons_reset(callback: CallbackQuery, state: FSMContext) -> None:
+    data = await state.get_data()
+    await state.update_data(buttons=[])
+    await callback.answer(texts.BROADCAST_BUTTONS_RESET)
+    await callback.message.edit_text(
+        texts.BROADCAST_PREVIEW_WITH_BUTTONS.format(
+            count=len(data["recipients"]), buttons=0
+        ),
+        reply_markup=admin_kb.broadcast_confirm(buttons_count=0),
     )
 
 
@@ -121,11 +183,14 @@ async def cb_broadcast_send(
     recipients: list[int] = data["recipients"]
     source_chat_id: int = data["source_chat_id"]
     source_message_id: int = data["source_message_id"]
+    buttons: list[list[str]] = data.get("buttons", [])
     admin_chat_id = callback.from_user.id
 
     await state.clear()
     await callback.message.edit_text(texts.BROADCAST_STARTED)
     await callback.answer()
+
+    reply_markup = _build_url_markup(buttons)
 
     asyncio.create_task(
         _run_and_report(
@@ -134,8 +199,19 @@ async def cb_broadcast_send(
             recipients=recipients,
             source_chat_id=source_chat_id,
             source_message_id=source_message_id,
+            reply_markup=reply_markup,
             report_to=admin_chat_id,
         )
+    )
+
+
+def _build_url_markup(buttons: list[list[str]]) -> InlineKeyboardMarkup | None:
+    if not buttons:
+        return None
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text=text, url=url)] for text, url in buttons
+        ]
     )
 
 
@@ -146,6 +222,7 @@ async def _run_and_report(
     recipients: list[int],
     source_chat_id: int,
     source_message_id: int,
+    reply_markup: InlineKeyboardMarkup | None,
     report_to: int,
 ) -> None:
     log.info("broadcast starting: recipients=%d", len(recipients))
@@ -156,6 +233,7 @@ async def _run_and_report(
             recipients=recipients,
             source_chat_id=source_chat_id,
             source_message_id=source_message_id,
+            reply_markup=reply_markup,
         )
         await bot.send_message(
             report_to,

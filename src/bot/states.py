@@ -19,6 +19,8 @@ class Broadcast(StatesGroup):
     waiting_for_audience = State()
     waiting_for_message = State()
     waiting_for_confirm = State()
+    waiting_for_button_text = State()
+    waiting_for_button_url = State()
 
 
 class SearchPlayers(StatesGroup):
@@ -32,3 +34,16 @@ class Inquiry(StatesGroup):
 
 class AddOrganizer(StatesGroup):
     waiting_for_query = State()
+
+
+class AddMenuButton(StatesGroup):
+    waiting_for_text = State()
+    waiting_for_url = State()
+
+
+class EditMenuButtonText(StatesGroup):
+    waiting_for_value = State()
+
+
+class EditMenuButtonUrl(StatesGroup):
+    waiting_for_value = State()

@@ -134,6 +134,51 @@ ORGANIZER_ALREADY = "Этот игрок уже организатор."
 ORGANIZER_REMOVE_CONFIRM = "Снять {who} с роли организатора?"
 ORGANIZER_REMOVED = "Снят с роли организатора."
 
+# Кастомные кнопки меню (только админ)
+BTN_ADMIN_MENU_BUTTONS = "📌 Кнопки меню"
+MENU_BUTTONS_LIST_HEADER = "Кастомные кнопки в главном меню: <b>{n}</b>"
+MENU_BUTTONS_LIST_EMPTY = "Кастомные кнопки не настроены."
+BTN_MENU_BUTTON_ADD = "➕ Добавить кнопку"
+MENU_BUTTON_CARD = (
+    "Кнопка #{id}\n"
+    "Текст: {text}\n"
+    "URL: <code>{url}</code>"
+)
+MENU_BUTTON_ENTER_TEXT = (
+    "Введите текст кнопки (можно с эмодзи в начале, например «📺 Стрим»):"
+)
+MENU_BUTTON_ENTER_URL = (
+    "Введите URL — должен начинаться с http:// или https://:"
+)
+MENU_BUTTON_INVALID_URL = "URL должен начинаться с http:// или https://. Введите ещё раз:"
+MENU_BUTTON_TEXT_EMPTY = "Текст не может быть пустым. Введите ещё раз:"
+MENU_BUTTON_ADDED = "Кнопка добавлена."
+MENU_BUTTON_UPDATED = "Кнопка обновлена."
+MENU_BUTTON_DELETED = "Кнопка удалена."
+BTN_MENU_BUTTON_EDIT_TEXT = "✏️ Текст"
+BTN_MENU_BUTTON_EDIT_URL = "✏️ URL"
+BTN_MENU_BUTTON_UP = "⬆️"
+BTN_MENU_BUTTON_DOWN = "⬇️"
+BTN_MENU_BUTTON_DELETE = "🗑 Удалить"
+MENU_BUTTON_DELETE_CONFIRM = "Удалить кнопку «{text}»?"
+
+# Кнопки в рассылке (per-broadcast)
+BTN_BROADCAST_ADD_BUTTON = "➕ Добавить кнопку"
+BTN_BROADCAST_RESET_BUTTONS = "🗑 Сбросить кнопки"
+BROADCAST_PREVIEW_WITH_BUTTONS = (
+    "👆 Превью сообщения выше.\n\n"
+    "Получателей: <b>{count}</b>\n"
+    "Кнопок: <b>{buttons}</b>\n\n"
+    "Отправить?"
+)
+BROADCAST_BUTTON_ENTER_TEXT = (
+    "Введите текст кнопки (можно с эмодзи):"
+)
+BROADCAST_BUTTON_ENTER_URL = (
+    "Введите URL — должен начинаться с http:// или https://:"
+)
+BROADCAST_BUTTONS_RESET = "Кнопки сброшены."
+
 # Добавление турнира
 ADD_ENTER_NAME = "Введите название турнира:"
 ADD_ENTER_DESCRIPTION = (
