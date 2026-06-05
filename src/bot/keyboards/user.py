@@ -67,6 +67,20 @@ def empty_back() -> InlineKeyboardMarkup:
     )
 
 
+def to_main_menu() -> InlineKeyboardMarkup:
+    """Single 🏠 Главное меню button for terminal messages."""
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text=texts.BTN_TO_MAIN_MENU,
+                    callback_data=MenuCB(action="main").pack(),
+                )
+            ]
+        ]
+    )
+
+
 def inquiry_confirm(inquiry_type: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.button(

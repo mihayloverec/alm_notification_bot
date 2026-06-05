@@ -1,5 +1,5 @@
 from aiogram import F, Router
-from aiogram.filters import CommandStart
+from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
@@ -38,6 +38,30 @@ async def cmd_start(
     elevated = await _is_elevated(user.id, config, organizers_repo)
     await message.answer(
         texts.START_GREETING,
+        reply_markup=user_kb.main_menu(elevated=elevated),
+    )
+
+
+@router.message(Command("menu"))
+async def cmd_menu(
+    message: Message,
+    state: FSMContext,
+    users_repo: UsersRepo,
+    organizers_repo: OrganizersRepo,
+    config: Config,
+) -> None:
+    await state.clear()
+    user = message.from_user
+    if user is None:
+        return
+    await users_repo.upsert(
+        user_id=user.id,
+        username=user.username,
+        first_name=user.first_name,
+    )
+    elevated = await _is_elevated(user.id, config, organizers_repo)
+    await message.answer(
+        texts.MAIN_MENU,
         reply_markup=user_kb.main_menu(elevated=elevated),
     )
 

@@ -8,6 +8,7 @@ START_GREETING = (
 MAIN_MENU = "Главное меню:"
 BACK = "⬅️ Назад"
 CANCEL = "❌ Отмена"
+BTN_TO_MAIN_MENU = "🏠 Главное меню"
 CANCELLED = "Отменено."
 NO_ACTIVE_TOURNAMENTS = "Сейчас нет активных турниров."
 NO_SUBSCRIPTIONS = "У тебя пока нет подписок."

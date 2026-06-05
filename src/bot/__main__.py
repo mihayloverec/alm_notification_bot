@@ -8,6 +8,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.types import BotCommand
 
 from bot import db
 from bot.config import load_config
@@ -66,6 +67,11 @@ async def main() -> None:
     dp.callback_query.middleware(ban_check)
 
     register_all(dp)
+
+    await bot.set_my_commands([
+        BotCommand(command="start", description="Главное меню"),
+        BotCommand(command="menu", description="Главное меню"),
+    ])
 
     log.info("starting bot, admins=%s", sorted(config.admin_ids))
     try:

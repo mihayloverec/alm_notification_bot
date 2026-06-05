@@ -62,7 +62,10 @@ async def msg_inquiry_received(
     recipients = await inquiry_recipients_repo.list_active_recipient_ids(inquiry_type)
     if not recipients:
         await state.clear()
-        await message.answer(texts.INQUIRY_UNAVAILABLE.format(label=label))
+        await message.answer(
+            texts.INQUIRY_UNAVAILABLE.format(label=label),
+            reply_markup=user_kb.to_main_menu(),
+        )
         return
 
     await state.set_state(Inquiry.waiting_for_confirm)
@@ -81,7 +84,9 @@ async def msg_inquiry_received(
 )
 async def cb_inquiry_cancel(callback: CallbackQuery, state: FSMContext) -> None:
     await state.clear()
-    await callback.message.edit_text(texts.CANCELLED)
+    await callback.message.edit_text(
+        texts.CANCELLED, reply_markup=user_kb.to_main_menu()
+    )
     await callback.answer()
 
 
@@ -135,9 +140,14 @@ async def cb_inquiry_send(
             delivered += 1
 
     if delivered == 0:
-        await callback.message.edit_text(texts.INQUIRY_SEND_FAILED)
+        await callback.message.edit_text(
+            texts.INQUIRY_SEND_FAILED, reply_markup=user_kb.to_main_menu()
+        )
     else:
-        await callback.message.edit_text(texts.INQUIRY_SENT.format(label=label))
+        await callback.message.edit_text(
+            texts.INQUIRY_SENT.format(label=label),
+            reply_markup=user_kb.to_main_menu(),
+        )
     await callback.answer()
 
 
