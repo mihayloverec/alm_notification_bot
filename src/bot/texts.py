@@ -76,6 +76,43 @@ NO_ACTIVE_TOURNAMENTS_ADMIN = "Сейчас нет активных турнир
 # Бан игрока — что видит сам игрок
 BANNED_NOTICE = "Вы заблокированы администратором."
 
+# Обращения (пользователь)
+BTN_INQUIRY_SK = "📨 Обратиться в СК"
+BTN_INQUIRY_DK = "📨 Обратиться в ДК"
+INQUIRY_LABEL = {"sk": "СК", "dk": "ДК"}
+INQUIRY_UNAVAILABLE = "Обращение в {label} временно недоступно — получатели не настроены."
+INQUIRY_ENTER_MESSAGE = (
+    "Опишите ваше обращение в {label}.\n\n"
+    "Можно прислать текст, фото или документ с подписью. "
+    "Сообщение будет переслано получателям как есть."
+)
+INQUIRY_PREVIEW = "👆 Превью обращения выше.\n\nПолучателей: <b>{count}</b>.\n\nОтправить?"
+INQUIRY_SENT = "✅ Обращение в {label} отправлено."
+INQUIRY_SEND_FAILED = "⚠️ Не удалось доставить ни одному получателю. Попробуйте позже."
+INQUIRY_HEADER = (
+    "📨 Новое обращение [<b>{label}</b>]\n"
+    "От: {username_line}"
+    "ID: <code>{user_id}</code>\n"
+    "Имя: {first_name}"
+)
+
+# Обращения (админ)
+BTN_ADMIN_INQUIRY = "📨 Получатели обращений"
+INQUIRY_ADMIN_MENU = "Получатели обращений — выберите тип:"
+BTN_INQUIRY_ADMIN_SK = "📋 СК"
+BTN_INQUIRY_ADMIN_DK = "📋 ДК"
+INQUIRY_ADMIN_LIST_HEADER = "Получатели <b>{label}</b>: <b>{n}</b>"
+INQUIRY_ADMIN_LIST_EMPTY = "Получатели <b>{label}</b> не настроены."
+BTN_INQUIRY_ADD = "➕ Добавить"
+INQUIRY_PICK_HEADER = "Выберите игрока для добавления в <b>{label}</b> (стр. {page}/{pages}):"
+INQUIRY_PICK_EMPTY = "Нет ни одного игрока — список пуст."
+INQUIRY_RECIPIENT_ADDED = "Добавлен в получатели {label}."
+INQUIRY_RECIPIENT_ALREADY = "Этот игрок уже в получателях {label}."
+INQUIRY_RECIPIENT_REMOVE_CONFIRM = "Удалить {who} из получателей {label}?"
+INQUIRY_RECIPIENT_REMOVED = "Удалён из получателей {label}."
+BTN_YES = "Да"
+BTN_NO = "Нет"
+
 # Добавление турнира
 ADD_ENTER_NAME = "Введите название турнира:"
 ADD_ENTER_DESCRIPTION = (

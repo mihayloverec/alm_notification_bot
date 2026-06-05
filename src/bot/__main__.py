@@ -14,7 +14,12 @@ from bot.config import load_config
 from bot.handlers import register_all
 from bot.middlewares.ban_check import BanCheckMiddleware
 from bot.middlewares.deps import DepsMiddleware
-from bot.repositories import SubscriptionsRepo, TournamentsRepo, UsersRepo
+from bot.repositories import (
+    InquiryRecipientsRepo,
+    SubscriptionsRepo,
+    TournamentsRepo,
+    UsersRepo,
+)
 
 
 def setup_logging(level: str) -> None:
@@ -35,6 +40,7 @@ async def main() -> None:
     users_repo = UsersRepo(conn)
     tournaments_repo = TournamentsRepo(conn)
     subscriptions_repo = SubscriptionsRepo(conn)
+    inquiry_recipients_repo = InquiryRecipientsRepo(conn)
 
     bot = Bot(
         token=config.bot_token,
@@ -47,6 +53,7 @@ async def main() -> None:
         users_repo=users_repo,
         tournaments_repo=tournaments_repo,
         subscriptions_repo=subscriptions_repo,
+        inquiry_recipients_repo=inquiry_recipients_repo,
     )
     dp.message.middleware(deps)
     dp.callback_query.middleware(deps)

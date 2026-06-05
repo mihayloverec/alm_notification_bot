@@ -2,7 +2,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot import texts
-from bot.keyboards.callbacks import MenuCB, TournamentCB
+from bot.keyboards.callbacks import InquiryUserCB, MenuCB, TournamentCB
 from bot.repositories import Tournament
 
 
@@ -10,9 +10,12 @@ def main_menu(is_admin: bool = False) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.button(text=texts.BTN_TOURNAMENTS, callback_data=MenuCB(action="tournaments"))
     kb.button(text=texts.BTN_MY_SUBS, callback_data=MenuCB(action="my_subs"))
+    kb.button(text=texts.BTN_INQUIRY_SK, callback_data=InquiryUserCB(action="start", type="sk"))
+    kb.button(text=texts.BTN_INQUIRY_DK, callback_data=InquiryUserCB(action="start", type="dk"))
     if is_admin:
         kb.button(text="🛠 Админ", callback_data=MenuCB(action="admin"))
-    kb.adjust(2, 1)
+    # 2 турнирные кнопки, 2 кнопки обращений, опционально админ
+    kb.adjust(2, 2, 1)
     return kb.as_markup()
 
 
@@ -61,3 +64,17 @@ def empty_back() -> InlineKeyboardMarkup:
             [InlineKeyboardButton(text=texts.BACK, callback_data=MenuCB(action="main").pack())]
         ]
     )
+
+
+def inquiry_confirm(inquiry_type: str) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    kb.button(
+        text=texts.BTN_SEND,
+        callback_data=InquiryUserCB(action="send", type=inquiry_type),
+    )
+    kb.button(
+        text=texts.CANCEL,
+        callback_data=InquiryUserCB(action="cancel", type=inquiry_type),
+    )
+    kb.adjust(2)
+    return kb.as_markup()

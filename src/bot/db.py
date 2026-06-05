@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import aiosqlite
 
-CURRENT_SCHEMA_VERSION = 1
+CURRENT_SCHEMA_VERSION = 2
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
@@ -36,6 +36,17 @@ CREATE INDEX IF NOT EXISTS idx_subscriptions_tournament
 
 CREATE INDEX IF NOT EXISTS idx_tournaments_active
     ON tournaments(is_active);
+
+CREATE TABLE IF NOT EXISTS inquiry_recipients (
+    inquiry_type TEXT NOT NULL,
+    user_id      INTEGER NOT NULL,
+    added_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (inquiry_type, user_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_inquiry_recipients_type
+    ON inquiry_recipients(inquiry_type);
 """
 
 
@@ -60,6 +71,11 @@ async def _migrate(conn: aiosqlite.Connection) -> None:
             conn, "users", "is_banned", "INTEGER NOT NULL DEFAULT 0"
         )
         await conn.execute("PRAGMA user_version = 1")
+
+    if version < 2:
+        # v2: inquiry_recipients is created via CREATE TABLE IF NOT EXISTS in SCHEMA above.
+        # Nothing extra to do for existing DBs.
+        await conn.execute("PRAGMA user_version = 2")
 
 
 async def _add_column_if_missing(

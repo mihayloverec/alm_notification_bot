@@ -32,3 +32,15 @@ class PlayerCB(CallbackData, prefix="p"):
     action: str  # "view" | "ban" | "unban" | "sub_list" | "sub" | "subs" | "unsub"
     user_id: int
     tournament_id: int = 0  # для sub / unsub
+
+
+class InquiryUserCB(CallbackData, prefix="iu"):
+    action: str  # "start" | "send" | "cancel"
+    type: str = ""  # "sk" | "dk"
+
+
+class InquiryAdminCB(CallbackData, prefix="ia"):
+    action: str  # "menu" | "list" | "add" | "page" | "pick" | "del" | "del_yes"
+    type: str = ""
+    user_id: int = 0
+    page: int = 0

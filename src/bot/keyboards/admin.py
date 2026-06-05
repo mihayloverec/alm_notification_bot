@@ -6,6 +6,7 @@ from bot.keyboards.callbacks import (
     AddTournamentCB,
     AdminCB,
     BroadcastCB,
+    InquiryAdminCB,
     MenuCB,
     PlayerCB,
     PlayersCB,
@@ -20,6 +21,7 @@ def admin_menu() -> InlineKeyboardMarkup:
     kb.button(text=texts.BTN_ADMIN_MANAGE, callback_data=AdminCB(action="manage"))
     kb.button(text=texts.BTN_ADMIN_BROADCAST, callback_data=AdminCB(action="broadcast"))
     kb.button(text=texts.BTN_ADMIN_PLAYERS, callback_data=AdminCB(action="players"))
+    kb.button(text=texts.BTN_ADMIN_INQUIRY, callback_data=AdminCB(action="inquiry"))
     kb.button(text=texts.BACK, callback_data=MenuCB(action="main"))
     kb.adjust(1)
     return kb.as_markup()
@@ -202,4 +204,103 @@ def player_subscriptions(
         callback_data=PlayerCB(action="view", user_id=user_id),
     )
     kb.adjust(1)
+    return kb.as_markup()
+
+
+# ---------- Получатели обращений ----------
+
+def inquiry_menu() -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    kb.button(
+        text=texts.BTN_INQUIRY_ADMIN_SK,
+        callback_data=InquiryAdminCB(action="list", type="sk"),
+    )
+    kb.button(
+        text=texts.BTN_INQUIRY_ADMIN_DK,
+        callback_data=InquiryAdminCB(action="list", type="dk"),
+    )
+    kb.button(text=texts.BACK, callback_data=MenuCB(action="admin"))
+    kb.adjust(2, 1)
+    return kb.as_markup()
+
+
+def inquiry_recipients_list(
+    inquiry_type: str,
+    users: list[User],
+) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    for u in users:
+        kb.button(
+            text=_player_label(u),
+            callback_data=InquiryAdminCB(
+                action="del", type=inquiry_type, user_id=u.user_id
+            ),
+        )
+    kb.button(
+        text=texts.BTN_INQUIRY_ADD,
+        callback_data=InquiryAdminCB(action="add", type=inquiry_type, page=0),
+    )
+    kb.button(
+        text=texts.BACK,
+        callback_data=InquiryAdminCB(action="menu"),
+    )
+    kb.adjust(1)
+    return kb.as_markup()
+
+
+def inquiry_pick_list(
+    inquiry_type: str,
+    users: list[User],
+    *,
+    page: int,
+    pages: int,
+) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    for u in users:
+        kb.button(
+            text=_player_label(u),
+            callback_data=InquiryAdminCB(
+                action="pick", type=inquiry_type, user_id=u.user_id, page=page
+            ),
+        )
+    kb.adjust(1)
+
+    nav = InlineKeyboardBuilder()
+    if pages > 1:
+        if page > 0:
+            nav.button(
+                text=texts.BTN_PREV_PAGE,
+                callback_data=InquiryAdminCB(
+                    action="page", type=inquiry_type, page=page - 1
+                ),
+            )
+        if page < pages - 1:
+            nav.button(
+                text=texts.BTN_NEXT_PAGE,
+                callback_data=InquiryAdminCB(
+                    action="page", type=inquiry_type, page=page + 1
+                ),
+            )
+    nav.button(
+        text=texts.BACK,
+        callback_data=InquiryAdminCB(action="list", type=inquiry_type),
+    )
+    nav.adjust(2 if pages > 1 else 1, 1)
+    kb.attach(nav)
+    return kb.as_markup()
+
+
+def inquiry_remove_confirm(inquiry_type: str, user_id: int) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    kb.button(
+        text=texts.BTN_YES,
+        callback_data=InquiryAdminCB(
+            action="del_yes", type=inquiry_type, user_id=user_id
+        ),
+    )
+    kb.button(
+        text=texts.BTN_NO,
+        callback_data=InquiryAdminCB(action="list", type=inquiry_type),
+    )
+    kb.adjust(2)
     return kb.as_markup()

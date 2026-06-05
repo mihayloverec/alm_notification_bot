@@ -3,7 +3,12 @@ from __future__ import annotations
 import pytest_asyncio
 
 from bot import db
-from bot.repositories import SubscriptionsRepo, TournamentsRepo, UsersRepo
+from bot.repositories import (
+    InquiryRecipientsRepo,
+    SubscriptionsRepo,
+    TournamentsRepo,
+    UsersRepo,
+)
 
 
 @pytest_asyncio.fixture
@@ -28,3 +33,8 @@ async def tournaments_repo(conn):
 @pytest_asyncio.fixture
 async def subscriptions_repo(conn):
     return SubscriptionsRepo(conn)
+
+
+@pytest_asyncio.fixture
+async def inquiry_recipients_repo(conn):
+    return InquiryRecipientsRepo(conn)
