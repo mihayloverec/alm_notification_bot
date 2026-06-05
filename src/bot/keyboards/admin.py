@@ -8,6 +8,7 @@ from bot.keyboards.callbacks import (
     BroadcastCB,
     InquiryAdminCB,
     MenuCB,
+    OrganizerCB,
     PlayerCB,
     PlayersCB,
     TournamentCB,
@@ -22,6 +23,15 @@ def admin_menu() -> InlineKeyboardMarkup:
     kb.button(text=texts.BTN_ADMIN_BROADCAST, callback_data=AdminCB(action="broadcast"))
     kb.button(text=texts.BTN_ADMIN_PLAYERS, callback_data=AdminCB(action="players"))
     kb.button(text=texts.BTN_ADMIN_INQUIRY, callback_data=AdminCB(action="inquiry"))
+    kb.button(text=texts.BTN_ADMIN_ORGANIZERS, callback_data=AdminCB(action="organizers"))
+    kb.button(text=texts.BACK, callback_data=MenuCB(action="main"))
+    kb.adjust(1)
+    return kb.as_markup()
+
+
+def organizer_menu() -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    kb.button(text=texts.BTN_ADMIN_BROADCAST, callback_data=AdminCB(action="broadcast"))
     kb.button(text=texts.BACK, callback_data=MenuCB(action="main"))
     kb.adjust(1)
     return kb.as_markup()
@@ -146,23 +156,25 @@ def search_results(users: list[User]) -> InlineKeyboardMarkup:
     return kb.as_markup()
 
 
-def player_card(u: User) -> InlineKeyboardMarkup:
+def player_card(u: User, *, is_admin: bool = True) -> InlineKeyboardMarkup:
+    """Player card. Organizers see only Back; admins see ban/sub management."""
     kb = InlineKeyboardBuilder()
-    kb.button(
-        text=texts.BTN_UNBAN if u.is_banned else texts.BTN_BAN,
-        callback_data=PlayerCB(
-            action="unban" if u.is_banned else "ban",
-            user_id=u.user_id,
-        ),
-    )
-    kb.button(
-        text=texts.BTN_PLAYER_ADD_SUB,
-        callback_data=PlayerCB(action="sub_list", user_id=u.user_id),
-    )
-    kb.button(
-        text=texts.BTN_PLAYER_SUBS,
-        callback_data=PlayerCB(action="subs", user_id=u.user_id),
-    )
+    if is_admin:
+        kb.button(
+            text=texts.BTN_UNBAN if u.is_banned else texts.BTN_BAN,
+            callback_data=PlayerCB(
+                action="unban" if u.is_banned else "ban",
+                user_id=u.user_id,
+            ),
+        )
+        kb.button(
+            text=texts.BTN_PLAYER_ADD_SUB,
+            callback_data=PlayerCB(action="sub_list", user_id=u.user_id),
+        )
+        kb.button(
+            text=texts.BTN_PLAYER_SUBS,
+            callback_data=PlayerCB(action="subs", user_id=u.user_id),
+        )
     kb.button(text=texts.BACK, callback_data=PlayersCB(action="list", page=0))
     kb.adjust(1)
     return kb.as_markup()
@@ -301,6 +313,90 @@ def inquiry_remove_confirm(inquiry_type: str, user_id: int) -> InlineKeyboardMar
     kb.button(
         text=texts.BTN_NO,
         callback_data=InquiryAdminCB(action="list", type=inquiry_type),
+    )
+    kb.adjust(2)
+    return kb.as_markup()
+
+
+# ---------- Организаторы ----------
+
+def organizers_list(users: list[User]) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    for u in users:
+        kb.button(
+            text=_player_label(u),
+            callback_data=OrganizerCB(action="del", user_id=u.user_id),
+        )
+    kb.button(
+        text=texts.BTN_ORGANIZER_ADD,
+        callback_data=OrganizerCB(action="add", page=0),
+    )
+    kb.button(text=texts.BACK, callback_data=MenuCB(action="admin"))
+    kb.adjust(1)
+    return kb.as_markup()
+
+
+def organizer_pick_list(
+    users: list[User],
+    *,
+    page: int,
+    pages: int,
+) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    for u in users:
+        kb.button(
+            text=_player_label(u),
+            callback_data=OrganizerCB(action="pick", user_id=u.user_id, page=page),
+        )
+    kb.adjust(1)
+
+    nav = InlineKeyboardBuilder()
+    if pages > 1:
+        if page > 0:
+            nav.button(
+                text=texts.BTN_PREV_PAGE,
+                callback_data=OrganizerCB(action="page", page=page - 1),
+            )
+        if page < pages - 1:
+            nav.button(
+                text=texts.BTN_NEXT_PAGE,
+                callback_data=OrganizerCB(action="page", page=page + 1),
+            )
+    nav.button(
+        text=texts.BTN_ORGANIZER_SEARCH,
+        callback_data=OrganizerCB(action="search"),
+    )
+    nav.button(text=texts.BACK, callback_data=OrganizerCB(action="list"))
+    nav.adjust(2 if pages > 1 else 1, 1, 1)
+    kb.attach(nav)
+    return kb.as_markup()
+
+
+def organizer_search_results(users: list[User]) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    for u in users:
+        kb.button(
+            text=_player_label(u),
+            callback_data=OrganizerCB(action="pick", user_id=u.user_id),
+        )
+    kb.button(
+        text=texts.BTN_ORGANIZER_SEARCH,
+        callback_data=OrganizerCB(action="search"),
+    )
+    kb.button(text=texts.BACK, callback_data=OrganizerCB(action="list"))
+    kb.adjust(1)
+    return kb.as_markup()
+
+
+def organizer_remove_confirm(user_id: int) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    kb.button(
+        text=texts.BTN_YES,
+        callback_data=OrganizerCB(action="del_yes", user_id=user_id),
+    )
+    kb.button(
+        text=texts.BTN_NO,
+        callback_data=OrganizerCB(action="list"),
     )
     kb.adjust(2)
     return kb.as_markup()

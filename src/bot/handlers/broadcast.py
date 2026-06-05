@@ -10,7 +10,7 @@ from aiogram.types import CallbackQuery, Message
 from bot import texts
 from bot.keyboards import admin as admin_kb
 from bot.keyboards.callbacks import AdminCB, BroadcastCB
-from bot.middlewares.admin_only import AdminOnlyMiddleware
+from bot.middlewares.elevated import ElevatedAccessMiddleware
 from bot.repositories import TournamentsRepo, UsersRepo
 from bot.services import broadcast as broadcast_service
 from bot.states import Broadcast
@@ -18,8 +18,8 @@ from bot.states import Broadcast
 log = logging.getLogger(__name__)
 
 router = Router(name="broadcast")
-router.message.middleware(AdminOnlyMiddleware())
-router.callback_query.middleware(AdminOnlyMiddleware())
+router.message.middleware(ElevatedAccessMiddleware())
+router.callback_query.middleware(ElevatedAccessMiddleware())
 
 
 @router.callback_query(AdminCB.filter(F.action == "broadcast"))

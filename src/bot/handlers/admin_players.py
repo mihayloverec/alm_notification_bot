@@ -11,7 +11,7 @@ from bot import texts
 from bot.config import Config
 from bot.keyboards import admin as admin_kb
 from bot.keyboards.callbacks import AdminCB, PlayerCB, PlayersCB
-from bot.middlewares.admin_only import AdminOnlyMiddleware
+from bot.middlewares.elevated import ElevatedAccessMiddleware
 from bot.repositories import (
     SubscriptionsRepo,
     TournamentsRepo,
@@ -21,10 +21,18 @@ from bot.repositories import (
 from bot.states import SearchPlayers
 
 router = Router(name="admin_players")
-router.message.middleware(AdminOnlyMiddleware())
-router.callback_query.middleware(AdminOnlyMiddleware())
+router.message.middleware(ElevatedAccessMiddleware())
+router.callback_query.middleware(ElevatedAccessMiddleware())
 
 PAGE_SIZE = 10
+
+
+async def _deny_if_not_admin(callback: CallbackQuery, config: Config) -> bool:
+    """If user is not admin, show alert and return True (= caller should return)."""
+    if config.is_admin(callback.from_user.id):
+        return False
+    await callback.answer(texts.NOT_AUTHORIZED, show_alert=True)
+    return True
 
 
 # ---------- список игроков ----------
@@ -129,20 +137,22 @@ async def cb_player_view(
     callback_data: PlayerCB,
     users_repo: UsersRepo,
     subscriptions_repo: SubscriptionsRepo,
+    config: Config,
 ) -> None:
     u = await users_repo.get(callback_data.user_id)
     if u is None:
         await callback.answer("Игрок не найден", show_alert=True)
         return
     subs_count = await subscriptions_repo.count_for_user(u.user_id)
+    is_admin = config.is_admin(callback.from_user.id)
     await callback.message.edit_text(
         _render_player_card(u, subs_count),
-        reply_markup=admin_kb.player_card(u),
+        reply_markup=admin_kb.player_card(u, is_admin=is_admin),
     )
     await callback.answer()
 
 
-# ---------- бан / разбан ----------
+# ---------- бан / разбан (только админ) ----------
 
 @router.callback_query(PlayerCB.filter(F.action == "ban"))
 async def cb_player_ban(
@@ -152,6 +162,8 @@ async def cb_player_ban(
     subscriptions_repo: SubscriptionsRepo,
     config: Config,
 ) -> None:
+    if await _deny_if_not_admin(callback, config):
+        return
     if callback_data.user_id == callback.from_user.id or config.is_admin(
         callback_data.user_id
     ):
@@ -159,7 +171,7 @@ async def cb_player_ban(
         return
     await users_repo.set_banned(callback_data.user_id, True)
     await callback.answer(texts.PLAYER_BANNED)
-    await _refresh_player_card(callback, callback_data.user_id, users_repo, subscriptions_repo)
+    await _refresh_player_card(callback, callback_data.user_id, users_repo, subscriptions_repo, config)
 
 
 @router.callback_query(PlayerCB.filter(F.action == "unban"))
@@ -168,10 +180,13 @@ async def cb_player_unban(
     callback_data: PlayerCB,
     users_repo: UsersRepo,
     subscriptions_repo: SubscriptionsRepo,
+    config: Config,
 ) -> None:
+    if await _deny_if_not_admin(callback, config):
+        return
     await users_repo.set_banned(callback_data.user_id, False)
     await callback.answer(texts.PLAYER_UNBANNED)
-    await _refresh_player_card(callback, callback_data.user_id, users_repo, subscriptions_repo)
+    await _refresh_player_card(callback, callback_data.user_id, users_repo, subscriptions_repo, config)
 
 
 # ---------- подписки игрока (управление от админа) ----------
@@ -181,7 +196,10 @@ async def cb_player_sub_list(
     callback: CallbackQuery,
     callback_data: PlayerCB,
     tournaments_repo: TournamentsRepo,
+    config: Config,
 ) -> None:
+    if await _deny_if_not_admin(callback, config):
+        return
     active = await tournaments_repo.list_active()
     if not active:
         await callback.answer(texts.NO_ACTIVE_TOURNAMENTS_ADMIN, show_alert=True)
@@ -200,14 +218,17 @@ async def cb_player_sub(
     tournaments_repo: TournamentsRepo,
     subscriptions_repo: SubscriptionsRepo,
     users_repo: UsersRepo,
+    config: Config,
 ) -> None:
+    if await _deny_if_not_admin(callback, config):
+        return
     t = await tournaments_repo.get(callback_data.tournament_id)
     if t is None:
         await callback.answer("Турнир не найден", show_alert=True)
         return
     await subscriptions_repo.subscribe(callback_data.user_id, t.id)
     await callback.answer(texts.PLAYER_SUBSCRIBED.format(name=t.name))
-    await _refresh_player_card(callback, callback_data.user_id, users_repo, subscriptions_repo)
+    await _refresh_player_card(callback, callback_data.user_id, users_repo, subscriptions_repo, config)
 
 
 @router.callback_query(PlayerCB.filter(F.action == "subs"))
@@ -216,7 +237,10 @@ async def cb_player_subs(
     callback_data: PlayerCB,
     subscriptions_repo: SubscriptionsRepo,
     tournaments_repo: TournamentsRepo,
+    config: Config,
 ) -> None:
+    if await _deny_if_not_admin(callback, config):
+        return
     ids = await subscriptions_repo.list_user_tournament_ids(callback_data.user_id)
     if not ids:
         await callback.answer(texts.PLAYER_NO_SUBS, show_alert=True)
@@ -240,12 +264,15 @@ async def cb_player_unsub(
     tournaments_repo: TournamentsRepo,
     subscriptions_repo: SubscriptionsRepo,
     users_repo: UsersRepo,
+    config: Config,
 ) -> None:
+    if await _deny_if_not_admin(callback, config):
+        return
     t = await tournaments_repo.get(callback_data.tournament_id)
     name = t.name if t else "—"
     await subscriptions_repo.unsubscribe(callback_data.user_id, callback_data.tournament_id)
     await callback.answer(texts.PLAYER_UNSUBSCRIBED.format(name=name))
-    await _refresh_player_card(callback, callback_data.user_id, users_repo, subscriptions_repo)
+    await _refresh_player_card(callback, callback_data.user_id, users_repo, subscriptions_repo, config)
 
 
 # ---------- helpers ----------
@@ -255,14 +282,16 @@ async def _refresh_player_card(
     user_id: int,
     users_repo: UsersRepo,
     subscriptions_repo: SubscriptionsRepo,
+    config: Config,
 ) -> None:
     u = await users_repo.get(user_id)
     if u is None:
         return
     subs_count = await subscriptions_repo.count_for_user(u.user_id)
+    is_admin = config.is_admin(callback.from_user.id)
     await callback.message.edit_text(
         _render_player_card(u, subs_count),
-        reply_markup=admin_kb.player_card(u),
+        reply_markup=admin_kb.player_card(u, is_admin=is_admin),
     )
 
 

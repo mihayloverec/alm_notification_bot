@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import aiosqlite
 
-CURRENT_SCHEMA_VERSION = 2
+CURRENT_SCHEMA_VERSION = 3
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
@@ -47,6 +47,12 @@ CREATE TABLE IF NOT EXISTS inquiry_recipients (
 
 CREATE INDEX IF NOT EXISTS idx_inquiry_recipients_type
     ON inquiry_recipients(inquiry_type);
+
+CREATE TABLE IF NOT EXISTS organizers (
+    user_id  INTEGER PRIMARY KEY,
+    added_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
 """
 
 
@@ -76,6 +82,10 @@ async def _migrate(conn: aiosqlite.Connection) -> None:
         # v2: inquiry_recipients is created via CREATE TABLE IF NOT EXISTS in SCHEMA above.
         # Nothing extra to do for existing DBs.
         await conn.execute("PRAGMA user_version = 2")
+
+    if version < 3:
+        # v3: organizers table — CREATE TABLE IF NOT EXISTS in SCHEMA handles it.
+        await conn.execute("PRAGMA user_version = 3")
 
 
 async def _add_column_if_missing(

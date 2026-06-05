@@ -31,10 +31,12 @@ UNSUBSCRIBED = "❎ Подписка отменена."
 
 # Админ
 ADMIN_MENU = "🛠 Админ-меню:"
+ORGANIZER_MENU = "📢 Меню организатора:"
 BTN_ADMIN_ADD = "➕ Добавить турнир"
 BTN_ADMIN_MANAGE = "📝 Управление турнирами"
 BTN_ADMIN_BROADCAST = "📢 Рассылка"
 BTN_ADMIN_PLAYERS = "👥 Игроки"
+BTN_ADMIN_ORGANIZERS = "👨‍💼 Организаторы"
 
 # Игроки (админ)
 PLAYERS_LIST_HEADER = "Игроки: всего <b>{total}</b>, страница <b>{page}/{pages}</b>"
@@ -112,6 +114,24 @@ INQUIRY_RECIPIENT_REMOVE_CONFIRM = "Удалить {who} из получател
 INQUIRY_RECIPIENT_REMOVED = "Удалён из получателей {label}."
 BTN_YES = "Да"
 BTN_NO = "Нет"
+
+# Организаторы (только админ)
+ORGANIZERS_LIST_HEADER = "Организаторы: <b>{n}</b>"
+ORGANIZERS_LIST_EMPTY = "Организаторов нет."
+BTN_ORGANIZER_ADD = "➕ Добавить организатора"
+BTN_ORGANIZER_SEARCH = "🔍 По @username / ID"
+ORGANIZER_PICK_HEADER = "Выберите игрока (стр. {page}/{pages}) или введите вручную:"
+ORGANIZER_PICK_EMPTY = "Игроков нет — попросите кандидата сначала запустить бота (/start)."
+ORGANIZER_SEARCH_PROMPT = (
+    "Введите @username (можно без @), имя или Telegram ID. "
+    "Кандидат должен быть зарегистрирован в боте (хоть раз сделал /start)."
+)
+ORGANIZER_SEARCH_NOT_FOUND = "По запросу «{q}» ничего не найдено."
+ORGANIZER_SEARCH_RESULTS = "Найдено: <b>{n}</b>. Выберите кандидата:"
+ORGANIZER_ADDED = "Добавлен в организаторы."
+ORGANIZER_ALREADY = "Этот игрок уже организатор."
+ORGANIZER_REMOVE_CONFIRM = "Снять {who} с роли организатора?"
+ORGANIZER_REMOVED = "Снят с роли организатора."
 
 # Добавление турнира
 ADD_ENTER_NAME = "Введите название турнира:"

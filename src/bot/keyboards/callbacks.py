@@ -44,3 +44,9 @@ class InquiryAdminCB(CallbackData, prefix="ia"):
     type: str = ""
     user_id: int = 0
     page: int = 0
+
+
+class OrganizerCB(CallbackData, prefix="og"):
+    action: str  # "list" | "add" | "page" | "pick" | "search" | "del" | "del_yes"
+    user_id: int = 0
+    page: int = 0

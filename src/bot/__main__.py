@@ -16,6 +16,7 @@ from bot.middlewares.ban_check import BanCheckMiddleware
 from bot.middlewares.deps import DepsMiddleware
 from bot.repositories import (
     InquiryRecipientsRepo,
+    OrganizersRepo,
     SubscriptionsRepo,
     TournamentsRepo,
     UsersRepo,
@@ -41,6 +42,7 @@ async def main() -> None:
     tournaments_repo = TournamentsRepo(conn)
     subscriptions_repo = SubscriptionsRepo(conn)
     inquiry_recipients_repo = InquiryRecipientsRepo(conn)
+    organizers_repo = OrganizersRepo(conn)
 
     bot = Bot(
         token=config.bot_token,
@@ -54,6 +56,7 @@ async def main() -> None:
         tournaments_repo=tournaments_repo,
         subscriptions_repo=subscriptions_repo,
         inquiry_recipients_repo=inquiry_recipients_repo,
+        organizers_repo=organizers_repo,
     )
     dp.message.middleware(deps)
     dp.callback_query.middleware(deps)

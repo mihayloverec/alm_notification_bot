@@ -4,29 +4,48 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from bot import texts
+from bot.config import Config
 from bot.keyboards import admin as admin_kb
 from bot.keyboards.callbacks import AddTournamentCB, AdminCB, MenuCB, TournamentCB
-from bot.middlewares.admin_only import AdminOnlyMiddleware
+from bot.middlewares.elevated import ElevatedAccessMiddleware
 from bot.repositories import TournamentsRepo
 from bot.states import AddTournament, EditTournamentDescription, EditTournamentName
 
 router = Router(name="admin")
-router.message.middleware(AdminOnlyMiddleware())
-router.callback_query.middleware(AdminOnlyMiddleware())
+router.message.middleware(ElevatedAccessMiddleware())
+router.callback_query.middleware(ElevatedAccessMiddleware())
 
 
-# ---------- admin menu ----------
+def _menu_for(is_admin: bool):
+    return (texts.ADMIN_MENU, admin_kb.admin_menu()) if is_admin else (
+        texts.ORGANIZER_MENU, admin_kb.organizer_menu()
+    )
+
+
+# ---------- admin / organizer menu entry ----------
 
 @router.message(Command("admin"))
-async def cmd_admin(message: Message, state: FSMContext) -> None:
+async def cmd_admin(
+    message: Message,
+    state: FSMContext,
+    config: Config,
+) -> None:
     await state.clear()
-    await message.answer(texts.ADMIN_MENU, reply_markup=admin_kb.admin_menu())
+    is_admin = config.is_admin(message.from_user.id)
+    title, markup = _menu_for(is_admin)
+    await message.answer(title, reply_markup=markup)
 
 
 @router.callback_query(MenuCB.filter(F.action == "admin"))
-async def cb_admin_menu(callback: CallbackQuery, state: FSMContext) -> None:
+async def cb_admin_menu(
+    callback: CallbackQuery,
+    state: FSMContext,
+    config: Config,
+) -> None:
     await state.clear()
-    await callback.message.edit_text(texts.ADMIN_MENU, reply_markup=admin_kb.admin_menu())
+    is_admin = config.is_admin(callback.from_user.id)
+    title, markup = _menu_for(is_admin)
+    await callback.message.edit_text(title, reply_markup=markup)
     await callback.answer()
 
 

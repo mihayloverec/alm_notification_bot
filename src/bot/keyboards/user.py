@@ -6,15 +6,15 @@ from bot.keyboards.callbacks import InquiryUserCB, MenuCB, TournamentCB
 from bot.repositories import Tournament
 
 
-def main_menu(is_admin: bool = False) -> InlineKeyboardMarkup:
+def main_menu(elevated: bool = False) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.button(text=texts.BTN_TOURNAMENTS, callback_data=MenuCB(action="tournaments"))
     kb.button(text=texts.BTN_MY_SUBS, callback_data=MenuCB(action="my_subs"))
     kb.button(text=texts.BTN_INQUIRY_SK, callback_data=InquiryUserCB(action="start", type="sk"))
     kb.button(text=texts.BTN_INQUIRY_DK, callback_data=InquiryUserCB(action="start", type="dk"))
-    if is_admin:
-        kb.button(text="🛠 Админ", callback_data=MenuCB(action="admin"))
-    # 2 турнирные кнопки, 2 кнопки обращений, опционально админ
+    if elevated:
+        kb.button(text="🛠 Меню админа/организатора", callback_data=MenuCB(action="admin"))
+    # 2 турнирные кнопки, 2 кнопки обращений, опционально админ/организатор
     kb.adjust(2, 2, 1)
     return kb.as_markup()
 
