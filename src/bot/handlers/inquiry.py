@@ -71,7 +71,7 @@ async def msg_inquiry_received(
         source_message_id=message.message_id,
     )
     await message.answer(
-        texts.INQUIRY_PREVIEW.format(count=len(recipients)),
+        texts.INQUIRY_PREVIEW,
         reply_markup=user_kb.inquiry_confirm(inquiry_type),
     )
 
