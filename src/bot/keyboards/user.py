@@ -14,8 +14,9 @@ def main_menu(elevated: bool = False) -> InlineKeyboardMarkup:
     kb.button(text=texts.BTN_INQUIRY_DK, callback_data=InquiryUserCB(action="start", type="dk"))
     if elevated:
         kb.button(text="🛠 Меню админа/организатора", callback_data=MenuCB(action="admin"))
-    # 2 турнирные кнопки, 2 кнопки обращений, опционально админ/организатор
-    kb.adjust(2, 2, 1)
+    # 2 турнирные кнопки в одном ряду, каждая кнопка обращения — отдельным рядом
+    # (длинные подписи иначе обрезаются на мобильном)
+    kb.adjust(2, 1, 1, 1)
     return kb.as_markup()
 
 
